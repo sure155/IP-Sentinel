@@ -67,6 +67,8 @@ C_SEL=${C_SEL:-1}
 COUNTRY_ID="${COUNTRY_MAP[$C_SEL]}"
 KEYWORD_FILE="${KEYWORD_MAP[$C_SEL]}"
 REGION_CODE="$COUNTRY_ID" # 兼容旧版的 config.conf
+# [v3.0.2新增] 安装时生成 Agent Token 鉴权密钥
+AGENT_TOKEN=$(openssl rand -hex 16)
 
 # 📍 动态二级菜单：省/州选择
 echo -e "\n\033[36m📍 【第二级】正在检索 [$COUNTRY_ID] 的行政区数据...\033[0m"
@@ -138,6 +140,8 @@ read -p "请输入选择 [y/n] (默认n): " TG_CHOICE
 TG_TOKEN=""
 CHAT_ID=""
 AGENT_PORT="9527"
+# [v3.1.0新增] 生成 Agent Token 用于 Webhook 鉴权
+AGENT_TOKEN=$(openssl rand -hex 16 2>/dev/null || head -c 32 /dev/urandom | xxd -p)
 if [[ "$TG_CHOICE" =~ ^[Yy]$ ]]; then
     echo -e "\n\033[33m💡 提示：您可以选择使用自己的机器人，或者直接回车使用官方公共机器人。\033[0m"
     echo -e "\033[33m⚠️  注意：若使用官方机器人，请务必先在 TG 中关注 @OmniBeacon_bot 并发送 /start\033[0m"
@@ -239,6 +243,9 @@ VALID_URL_SUFFIX=$(jq -r '.google_module.valid_url_suffix' "$REGION_JSON_FILE")
 cat > "$CONFIG_FILE" << EOF
 # IP-Sentinel 本地固化配置 (生成时间: $(date '+%Y-%m-%d %H:%M:%S'))
 REGION_CODE="$REGION_CODE"
+COUNTRY_ID="$COUNTRY_ID"
+STATE_ID="$STATE_ID"
+CITY_ID="$CITY_ID"
 REGION_NAME="$REGION_NAME"
 BASE_LAT="$BASE_LAT"
 BASE_LON="$BASE_LON"
@@ -253,12 +260,16 @@ TG_TOKEN="$TG_TOKEN"
 TG_API_URL="$TG_API_URL"
 CHAT_ID="$CHAT_ID"
 AGENT_PORT="$AGENT_PORT"
+AGENT_TOKEN="$AGENT_TOKEN"
 INSTALL_DIR="$INSTALL_DIR"
 LOG_FILE="${INSTALL_DIR}/logs/sentinel.log"
 
 # [v3.0.1新增修改 2: 网络栈锚点锁定配置，供其他脚本读取] 
 IP_PREF="$IP_PREF"
 BIND_IP="$BIND_IP"
+
+# [v3.0.2新增] 统一远程仓库 Raw 数据直链前缀，供其他脚本读取
+REPO_RAW_URL="$REPO_RAW_URL"
 EOF
 
 # 6. 拉取全套组件 (按需下载，绝不浪费空间)
@@ -269,6 +280,8 @@ curl -sL "${REPO_RAW_URL}/core/updater.sh" -o "${INSTALL_DIR}/core/updater.sh"
 curl -sL "${REPO_RAW_URL}/core/tg_report.sh" -o "${INSTALL_DIR}/core/tg_report.sh"
 curl -sL "${REPO_RAW_URL}/core/agent_daemon.sh" -o "${INSTALL_DIR}/core/agent_daemon.sh"
 curl -sL "${REPO_RAW_URL}/core/uninstall.sh" -o "${INSTALL_DIR}/core/uninstall.sh"
+# [v3.1.0新增] 部署独立 webhook.py 文件（替代 heredoc 内联方式）
+curl -sL "${REPO_RAW_URL}/core/webhook.py" -o "${INSTALL_DIR}/core/webhook.py"
 curl -sL "${REPO_RAW_URL}/data/user_agents.txt" -o "${INSTALL_DIR}/data/user_agents.txt"
 
 # 动态按需组件
@@ -283,6 +296,8 @@ if [ "$ENABLE_TRUST" == "true" ]; then
 fi
 
 chmod +x ${INSTALL_DIR}/core/*.sh
+# [v3.1.0新增] 确保 webhook.py 可执行
+chmod +x ${INSTALL_DIR}/core/webhook.py
 
 # 7. 配置系统定时任务 (高频调度与看门狗)
 echo -e "\n[7/7] 正在注入系统定时任务与看门狗进程..."
@@ -298,9 +313,10 @@ if [[ -n "$TG_TOKEN" ]] && [[ -n "$CHAT_ID" ]]; then
     # 每天早上 8 点发送昨天的统计战报
     echo "0 8 * * * ${INSTALL_DIR}/core/tg_report.sh >/dev/null 2>&1" >> /tmp/cron_backup
     
-    # 双保险守护进程看门狗
-    echo "@reboot nohup bash ${INSTALL_DIR}/core/agent_daemon.sh >/dev/null 2>&1 &" >> /tmp/cron_backup
-    echo "* * * * * nohup bash ${INSTALL_DIR}/core/agent_daemon.sh >/dev/null 2>&1 &" >> /tmp/cron_backup
+	# 双保险守护进程看门狗
+	echo "@reboot nohup bash ${INSTALL_DIR}/core/agent_daemon.sh >/dev/null 2>&1 &" >> /tmp/cron_backup
+	# [v3.1.0优化] 看门狗从每分钟改为每5分钟，减少无谓的资源消耗
+	echo "*/5 * * * * bash ${INSTALL_DIR}/core/agent_daemon.sh >/dev/null 2>&1" >> /tmp/cron_backup
     
     # 安装时立刻启动一次边缘守护进程
     nohup bash "${INSTALL_DIR}/core/agent_daemon.sh" >/dev/null 2>&1 &
@@ -318,7 +334,7 @@ if [[ -n "$TG_TOKEN" ]] && [[ -n "$CHAT_ID" ]]; then
     
 # 构造注册暗号 (使用带 [] 装甲的 BIND_IP，防止 Master 端解析错误)
     NODE_NAME=$(hostname | cut -c 1-15)
-    REG_MSG="#REGISTER#|${NODE_NAME}|${BIND_IP}|${AGENT_PORT}"
+    REG_MSG="#REGISTER#|${NODE_NAME}|${BIND_IP}|${AGENT_PORT}|${AGENT_TOKEN}"
     
 # 执行主动推送
     PUSH_RESULT=$(curl -s -X POST "${TG_API_URL}" \

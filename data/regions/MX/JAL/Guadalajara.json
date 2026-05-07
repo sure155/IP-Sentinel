@@ -1,0 +1,21 @@
+{
+  "region_name": "México - Guadalajara",
+  "google_module": {
+    "base_lat": 20.6597,
+    "base_lon": -103.3495,
+    "lang_params": "hl=es&gl=MX",
+    "valid_url_suffix": "com.mx"
+  },
+  "trust_module": {
+    "white_urls": [
+      "https://es.wikipedia.org/wiki/Special:Random",
+      "https://www.mercadolibre.com.mx/",
+      "https://www.informador.mx/",
+      "https://www.amazon.com.mx/",
+      "https://www.gob.mx/",
+      "https://www.walmart.com.mx/",
+      "https://www.bbc.com/mundo/",
+      "https://www.milenio.com/"
+    ]
+  }
+}

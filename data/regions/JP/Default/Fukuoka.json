@@ -1,8 +1,8 @@
 {
-  "region_name": "日本 (東京)",
+  "region_name": "日本 (福岡)",
   "google_module": {
-    "base_lat": 35.6812,
-    "base_lon": 139.7671,
+    "base_lat": 33.5904,
+    "base_lon": 130.4017,
     "lang_params": "hl=ja&gl=JP",
     "valid_url_suffix": "com"
   },
@@ -13,9 +13,9 @@
       "https://www.rakuten.co.jp/",
       "https://www.nhk.or.jp/",
       "https://kakaku.com/",
-      "https://www.goo.ne.jp/",
       "https://www.amazon.co.jp/",
-      "https://news.yahoo.co.jp/"
+      "https://www.goo.ne.jp/",
+      "https://www.yafuoku.com/"
     ]
   }
 }

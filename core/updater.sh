@@ -8,13 +8,14 @@
 INSTALL_DIR="/opt/ip_sentinel"
 CONFIG_FILE="${INSTALL_DIR}/config.conf"
 # 你的专属 Forgejo 仓库 Raw 数据直链前缀
-REPO_RAW_URL="https://git.94211762.xyz/hotyue/IP-Sentinel/raw/branch/main"
-
 # 1. 加载本地冷数据配置
 if [ ! -f "$CONFIG_FILE" ]; then
-    exit 1
+  exit 1
 fi
 source "$CONFIG_FILE"
+
+# [v3.1.0修复] REPO_RAW_URL 从 config.conf 读取，不再硬编码私库地址
+REPO_RAW_URL="${REPO_RAW_URL:-https://raw.githubusercontent.com/hotyue/IP-Sentinel/main}"
 
 # 2. 全局日志写入函数
 log() {
