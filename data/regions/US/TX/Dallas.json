@@ -1,0 +1,21 @@
+{
+  "region_name": "United States - Dallas",
+  "google_module": {
+    "base_lat": 32.7767,
+    "base_lon": -96.797,
+    "lang_params": "hl=en&gl=US",
+    "valid_url_suffix": "com"
+  },
+  "trust_module": {
+    "white_urls": [
+      "https://en.wikipedia.org/wiki/Special:Random",
+      "https://www.dallasnews.com/",
+      "https://www.amazon.com/",
+      "https://www.weather.com/",
+      "https://www.npr.org/",
+      "https://www.yelp.com/",
+      "https://www.espn.com/",
+      "https://www.target.com/"
+    ]
+  }
+}

@@ -8,21 +8,54 @@
 INSTALL_DIR="/opt/ip_sentinel"
 CONFIG_FILE="${INSTALL_DIR}/config.conf"
 UA_FILE="${INSTALL_DIR}/data/user_agents.txt"
-REPO_RAW_URL="https://git.94211762.xyz/hotyue/IP-Sentinel/raw/branch/main"
+# [v3.0.2移除] 不再硬编码私库地址，改为从 config.conf 读取 REPO_RAW_URL
 
 # 1. 基础环境校验
 [ ! -f "$CONFIG_FILE" ] && exit 1
 source "$CONFIG_FILE"
 
+# [v3.0.2新增] 从 config.conf 读取 REPO_RAW_URL，兜底使用 GitHub 官方地址
+REPO_RAW_URL="${REPO_RAW_URL:-https://raw.githubusercontent.com/hotyue/IP-Sentinel/main}"
+
 REGION=${REGION_CODE:-"US"}
 LOG_FILE="${INSTALL_DIR}/logs/sentinel.log"
-REGION_JSON_FILE="${INSTALL_DIR}/data/regions/${REGION}.json"
+
+# [v3.0.2修复] 支持 v3.0 三级目录路径，同时兼容旧版单级路径
+# 优先使用三级路径: data/regions/${COUNTRY_ID}/${STATE_ID}/${CITY_ID}.json
+if [ -n "$COUNTRY_ID" ] && [ -n "$STATE_ID" ] && [ -n "$CITY_ID" ]; then
+ REGION_JSON_FILE="${INSTALL_DIR}/data/regions/${COUNTRY_ID}/${STATE_ID}/${CITY_ID}.json"
+else
+ REGION_JSON_FILE=""
+fi
+# 旧版兼容路径: data/regions/${REGION}.json
+REGION_JSON_FILE_OLD="${INSTALL_DIR}/data/regions/${REGION}.json"
+
+# 确定最终使用的 JSON 文件 (三级路径优先，不存在则回退旧版)
+if [ -n "$REGION_JSON_FILE" ] && [ -f "$REGION_JSON_FILE" ]; then
+ : # 三级路径存在，直接使用
+elif [ -f "$REGION_JSON_FILE_OLD" ]; then
+ REGION_JSON_FILE="$REGION_JSON_FILE_OLD"
+fi
 
 # 2. 动态获取配置 (解耦核心)
 # 兼容旧节点：如果本地没有 json，自动拉取最新的云端配置 (强制遵循锚点协议)
 if [ ! -f "$REGION_JSON_FILE" ]; then
-    mkdir -p "${INSTALL_DIR}/data/regions"
-    curl -${IP_PREF:-4} -sL "${REPO_RAW_URL}/data/regions/${REGION}.json" -o "$REGION_JSON_FILE"
+ # [v3.0.2修复] 优先尝试三级路径下载，失败后回退旧版单级路径
+ if [ -n "$COUNTRY_ID" ] && [ -n "$STATE_ID" ] && [ -n "$CITY_ID" ]; then
+ mkdir -p "${INSTALL_DIR}/data/regions/${COUNTRY_ID}/${STATE_ID}"
+ curl -${IP_PREF:-4} -sL "${REPO_RAW_URL}/data/regions/${COUNTRY_ID}/${STATE_ID}/${CITY_ID}.json" -o "${INSTALL_DIR}/data/regions/${COUNTRY_ID}/${STATE_ID}/${CITY_ID}.json"
+ if [ -s "${INSTALL_DIR}/data/regions/${COUNTRY_ID}/${STATE_ID}/${CITY_ID}.json" ]; then
+ REGION_JSON_FILE="${INSTALL_DIR}/data/regions/${COUNTRY_ID}/${STATE_ID}/${CITY_ID}.json"
+ fi
+ fi
+ # 如果三级路径拉取失败，回退旧版单级路径
+ if [ ! -f "$REGION_JSON_FILE" ] || [ ! -s "$REGION_JSON_FILE" ]; then
+ mkdir -p "${INSTALL_DIR}/data/regions"
+ curl -${IP_PREF:-4} -sL "${REPO_RAW_URL}/data/regions/${REGION}.json" -o "$REGION_JSON_FILE_OLD"
+ if [ -s "$REGION_JSON_FILE_OLD" ]; then
+ REGION_JSON_FILE="$REGION_JSON_FILE_OLD"
+ fi
+ fi
 fi
 
 # 使用 jq 将 json 中的网址数组安全地读入 Bash 数组

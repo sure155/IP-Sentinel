@@ -37,8 +37,15 @@ db_exec() {
 
 # --- 核心轮询循环 ---
 while true; do
-    OFFSET=$(cat $OFFSET_FILE)
-    UPDATES=$(curl -s "https://api.telegram.org/bot${TG_TOKEN}/getUpdates?offset=${OFFSET}&timeout=30")
+  OFFSET=$(cat $OFFSET_FILE)
+  # [v3.1.0优化] 轮询增加超时和重试机制
+  UPDATES=$(curl -s --retry 3 --retry-delay 2 --retry-connrefused -m 35 "https://api.telegram.org/bot${TG_TOKEN}/getUpdates?offset=${OFFSET}&timeout=30")
+  
+  # [v3.1.0优化] 检查 API 返回是否有效
+  if [ -z "$UPDATES" ] || ! echo "$UPDATES" | jq -e '.ok' >/dev/null 2>&1; then
+    sleep 5
+    continue
+  fi
     
     COUNT=$(echo "$UPDATES" | jq -r '.result | length' 2>/dev/null)
     
@@ -63,14 +70,16 @@ while true; do
             # 1. 节点注册通道 (v3.0.1 终极防注入补丁)
             # ==========================================
             if [[ "$TEXT" == *"#REGISTER#"* ]]; then
-                REG_LINE=$(echo "$TEXT" | grep "#REGISTER#" | head -n 1 | tr -d '\` ')
-                IFS='|' read -r MAGIC RAW_NODE RAW_IP RAW_PORT <<< "$REG_LINE"
-                
-                # 🛡️ 强制字符白名单过滤：物理抹杀所有 SQL 注入特殊字符
-                CHAT_ID=$(echo "$CHAT_ID" | tr -cd '0-9-') # ChatID 只能是数字和负号
-                NODE_NAME=$(echo "$RAW_NODE" | tr -cd 'a-zA-Z0-9_.-' | cut -c 1-30) # 节点名限字母数字横杠下划线
-                AGENT_IP=$(echo "$RAW_IP" | tr -cd 'a-zA-Z0-9.:\[\]-' | cut -c 1-50) # IP 格式限制
-                AGENT_PORT=$(echo "$RAW_PORT" | tr -cd '0-9' | cut -c 1-5) # 端口只能是数字
+  REG_LINE=$(echo "$TEXT" | grep "#REGISTER#" | head -n 1 | tr -d '\` ')
+  IFS='|' read -r MAGIC RAW_NODE RAW_IP RAW_PORT RAW_TOKEN <<< "$REG_LINE"
+  
+  # 🛡️ 强制字符白名单过滤：物理抹杀所有 SQL 注入特殊字符
+  CHAT_ID=$(echo "$CHAT_ID" | tr -cd '0-9-') # ChatID 只能是数字和负号
+  NODE_NAME=$(echo "$RAW_NODE" | tr -cd 'a-zA-Z0-9_.-' | cut -c 1-30) # 节点名限字母数字横杠下划线
+  AGENT_IP=$(echo "$RAW_IP" | tr -cd 'a-zA-Z0-9.:[]-' | cut -c 1-50) # IP 格式限制
+  AGENT_PORT=$(echo "$RAW_PORT" | tr -cd '0-9' | cut -c 1-5) # 端口只能是数字
+  # [v3.1.0新增] Token 白名单过滤：仅允许十六进制字符
+  AGENT_TOKEN=$(echo "$RAW_TOKEN" | tr -cd 'a-fA-F0-9' | cut -c 1-32)
                 
                 # 异常拦截：如果核心字段被过滤成了空值，说明是恶意请求，直接抛弃
                 if [ -z "$NODE_NAME" ] || [ -z "$AGENT_IP" ] || [ -z "$AGENT_PORT" ] || [ -z "$CHAT_ID" ]; then
@@ -78,7 +87,7 @@ while true; do
                     continue
                 fi
 
-                db_exec "INSERT INTO nodes (chat_id, node_name, agent_ip, agent_port, last_seen) VALUES ('$CHAT_ID', '$NODE_NAME', '$AGENT_IP', '$AGENT_PORT', CURRENT_TIMESTAMP) ON CONFLICT(chat_id, node_name) DO UPDATE SET agent_ip='$AGENT_IP', agent_port='$AGENT_PORT', last_seen=CURRENT_TIMESTAMP;"
+                db_exec "INSERT INTO nodes (chat_id, node_name, agent_ip, agent_port, agent_token, last_seen) VALUES ('$CHAT_ID', '$NODE_NAME', '$AGENT_IP', '$AGENT_PORT', '$AGENT_TOKEN', CURRENT_TIMESTAMP) ON CONFLICT(chat_id, node_name) DO UPDATE SET agent_ip='$AGENT_IP', agent_port='$AGENT_PORT', agent_token='$AGENT_TOKEN', last_seen=CURRENT_TIMESTAMP;"
                 send_msg "$CHAT_ID" "✅ 司令部已确认！节点接入成功: \`$NODE_NAME\` ($AGENT_IP:$AGENT_PORT)"
                 continue
             fi
@@ -154,11 +163,19 @@ while true; do
                     TARGET_NODE=$(echo "$TEXT" | cut -d':' -f2 | tr -cd 'a-zA-Z0-9_.-')
                     CHAT_ID=$(echo "$CHAT_ID" | tr -cd '0-9-')
                     
-                    AGENT_INFO=$(db_exec "SELECT agent_ip, agent_port FROM nodes WHERE chat_id='$CHAT_ID' AND node_name='$TARGET_NODE' LIMIT 1;")
-                    AGENT_IP=$(echo "$AGENT_INFO" | cut -d'|' -f1)
-                    AGENT_PORT=$(echo "$AGENT_INFO" | cut -d'|' -f2)
+  AGENT_INFO=$(db_exec "SELECT agent_ip, agent_port, agent_token FROM nodes WHERE chat_id='$CHAT_ID' AND node_name='$TARGET_NODE' LIMIT 1;")
+  AGENT_IP=$(echo "$AGENT_INFO" | cut -d'|' -f1)
+  AGENT_PORT=$(echo "$AGENT_INFO" | cut -d'|' -f2)
+  AGENT_TOKEN=$(echo "$AGENT_INFO" | cut -d'|' -f3)
 
-                    if [ -n "$AGENT_IP" ] && [ -n "$AGENT_PORT" ]; then
+  if [ -n "$AGENT_IP" ] && [ -n "$AGENT_PORT" ]; then
+  # [v3.1.0新增] 构造带 Token 的 Webhook URL
+  AGENT_BASE="http://${AGENT_IP}:${AGENT_PORT}"
+  if [ -n "$AGENT_TOKEN" ]; then
+    AGENT_URL="${AGENT_BASE}/trigger_${ACTION_TYPE}?token=${AGENT_TOKEN}"
+  else
+    AGENT_URL="${AGENT_BASE}/trigger_${ACTION_TYPE}"
+  fi
                         # [v3.0.2 防刷屏] 原位刷新菜单为等待状态
                         if [ -n "$MSG_ID" ]; then
                             edit_msg "$CHAT_ID" "$MSG_ID" "⏳ 正在向 \`$TARGET_NODE\` ($AGENT_IP) 下发 [$ACTION_TYPE] 指令，请稍候..."
@@ -166,8 +183,8 @@ while true; do
                             send_msg "$CHAT_ID" "⏳ 正在向 \`$TARGET_NODE\` ($AGENT_IP) 下发 [$ACTION_TYPE] 指令，请稍候..."
                         fi
                         
-                        # 触发 Webhook
-                        RESPONSE=$(curl -s -m 5 "http://${AGENT_IP}:${AGENT_PORT}/trigger_${ACTION_TYPE}" || echo "FAILED")
+  # [v3.1.0] 使用带 Token 的 URL 发起请求（含重试机制）
+  RESPONSE=$(curl -s -m 5 --retry 2 --retry-delay 1 "$AGENT_URL" || echo "FAILED")
                         
                         # 结果判定
                         if [ "$RESPONSE" == "FAILED" ]; then

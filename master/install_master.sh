@@ -54,15 +54,19 @@ EOF
 echo -e "\n[3/4] 正在初始化 SQLite 数据库表结构..."
 sqlite3 "$DB_FILE" <<EOF
 CREATE TABLE IF NOT EXISTS nodes (
-    chat_id TEXT,
-    node_name TEXT,
-    agent_ip TEXT,
-    agent_port TEXT,
-    last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY(chat_id, node_name)
+  chat_id TEXT,
+  node_name TEXT,
+  agent_ip TEXT,
+  agent_port TEXT,
+  agent_token TEXT DEFAULT '',
+  last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY(chat_id, node_name)
 );
 EOF
 echo "✅ 数据库创建成功: $DB_FILE"
+
+# [v3.1.0新增] 为旧版数据库添加 agent_token 列（兼容升级）
+sqlite3 "$DB_FILE" "ALTER TABLE nodes ADD COLUMN agent_token TEXT DEFAULT '';" 2>/dev/null || true
 
 # 4. 拉取核心调度代码并运行
 echo -e "\n[4/4] 部署 TG 调度守护进程..."

@@ -1,0 +1,21 @@
+{
+  "region_name": "United States - San Francisco",
+  "google_module": {
+    "base_lat": 37.7749,
+    "base_lon": -122.4194,
+    "lang_params": "hl=en&gl=US",
+    "valid_url_suffix": "com"
+  },
+  "trust_module": {
+    "white_urls": [
+      "https://en.wikipedia.org/wiki/Special:Random",
+      "https://www.sfgate.com/",
+      "https://www.sfchronicle.com/",
+      "https://www.yelp.com/",
+      "https://www.amazon.com/",
+      "https://www.weather.com/",
+      "https://www.npr.org/",
+      "https://www.crunchbase.com/"
+    ]
+  }
+}

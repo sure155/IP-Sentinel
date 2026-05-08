@@ -1,0 +1,21 @@
+{
+  "region_name": "United States - Phoenix",
+  "google_module": {
+    "base_lat": 33.4484,
+    "base_lon": -112.074,
+    "lang_params": "hl=en&gl=US",
+    "valid_url_suffix": "com"
+  },
+  "trust_module": {
+    "white_urls": [
+      "https://en.wikipedia.org/wiki/Special:Random",
+      "https://www.azcentral.com/",
+      "https://www.amazon.com/",
+      "https://www.weather.com/",
+      "https://www.npr.org/",
+      "https://www.yelp.com/",
+      "https://www.target.com/",
+      "https://www.cdc.gov/"
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 {
-  "version": "3.0.0",
-  "updated_at": "2026-04-09",
+  "version": "3.1.0",
+  "updated_at": "2026-05-07",
   "countries": [
     {
       "id": "US",
@@ -11,7 +11,64 @@
           "id": "CA",
           "name": "California (加州)",
           "cities": [
-            { "id": "Los_Angeles", "name": "Los Angeles (洛杉矶)" }
+            {
+              "id": "Los_Angeles",
+              "name": "Los Angeles (洛杉矶)"
+            },
+            {
+              "id": "San_Francisco",
+              "name": "San Francisco (旧金山)"
+            }
+          ]
+        },
+        {
+          "id": "NY",
+          "name": "New York (纽约州)",
+          "cities": [
+            {
+              "id": "New_York",
+              "name": "New York City (纽约)"
+            }
+          ]
+        },
+        {
+          "id": "TX",
+          "name": "Texas (德州)",
+          "cities": [
+            {
+              "id": "Dallas",
+              "name": "Dallas (达拉斯)"
+            }
+          ]
+        },
+        {
+          "id": "AZ",
+          "name": "Arizona (亚利桑那)",
+          "cities": [
+            {
+              "id": "Phoenix",
+              "name": "Phoenix (凤凰城)"
+            }
+          ]
+        },
+        {
+          "id": "FL",
+          "name": "Florida (佛罗里达)",
+          "cities": [
+            {
+              "id": "Miami",
+              "name": "Miami (迈阿密)"
+            }
+          ]
+        },
+        {
+          "id": "IL",
+          "name": "Illinois (伊利诺伊)",
+          "cities": [
+            {
+              "id": "Chicago",
+              "name": "Chicago (芝加哥)"
+            }
           ]
         }
       ]
@@ -25,7 +82,99 @@
           "id": "Default",
           "name": "Default State",
           "cities": [
-            { "id": "Tokyo", "name": "Tokyo (东京)" }
+            {
+              "id": "Tokyo",
+              "name": "Tokyo (东京)"
+            },
+            {
+              "id": "Osaka",
+              "name": "Osaka (大阪)"
+            },
+            {
+              "id": "Fukuoka",
+              "name": "Fukuoka (福冈)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "GB",
+      "name": "United Kingdom (英国)",
+      "keyword_file": "kw_GB.txt",
+      "states": [
+        {
+          "id": "ENG",
+          "name": "England (英格兰)",
+          "cities": [
+            {
+              "id": "London",
+              "name": "London (伦敦)"
+            }
+          ]
+        },
+        {
+          "id": "SCT",
+          "name": "Scotland (苏格兰)",
+          "cities": [
+            {
+              "id": "Edinburgh",
+              "name": "Edinburgh (爱丁堡)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "MX",
+      "name": "Mexico (墨西哥)",
+      "keyword_file": "kw_MX.txt",
+      "states": [
+        {
+          "id": "MEX",
+          "name": "Estado de México",
+          "cities": [
+            {
+              "id": "Mexico_City",
+              "name": "Mexico City (墨西哥城)"
+            }
+          ]
+        },
+        {
+          "id": "JAL",
+          "name": "Jalisco (哈利斯科)",
+          "cities": [
+            {
+              "id": "Guadalajara",
+              "name": "Guadalajara (瓜达拉哈拉)"
+            }
+          ]
+        },
+        {
+          "id": "NLE",
+          "name": "Nuevo León (新莱昂)",
+          "cities": [
+            {
+              "id": "Monterrey",
+              "name": "Monterrey (蒙特雷)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "HK",
+      "name": "Hong Kong (香港)",
+      "keyword_file": "kw_HK.txt",
+      "states": [
+        {
+          "id": "Default",
+          "name": "Default State",
+          "cities": [
+            {
+              "id": "Hong_Kong",
+              "name": "Hong Kong (香港)"
+            }
           ]
         }
       ]

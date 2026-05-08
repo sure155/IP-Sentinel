@@ -1,0 +1,21 @@
+{
+  "region_name": "United States - New York City",
+  "google_module": {
+    "base_lat": 40.7128,
+    "base_lon": -74.006,
+    "lang_params": "hl=en&gl=US",
+    "valid_url_suffix": "com"
+  },
+  "trust_module": {
+    "white_urls": [
+      "https://en.wikipedia.org/wiki/Special:Random",
+      "https://www.nytimes.com/",
+      "https://www.nydailynews.com/",
+      "https://www.amazon.com/",
+      "https://www.weather.com/",
+      "https://www.npr.org/",
+      "https://www.yelp.com/",
+      "https://www.wsj.com/"
+    ]
+  }
+}

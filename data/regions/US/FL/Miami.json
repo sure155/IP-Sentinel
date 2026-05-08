@@ -1,0 +1,21 @@
+{
+  "region_name": "United States - Miami",
+  "google_module": {
+    "base_lat": 25.7617,
+    "base_lon": -80.1918,
+    "lang_params": "hl=en&gl=US",
+    "valid_url_suffix": "com"
+  },
+  "trust_module": {
+    "white_urls": [
+      "https://en.wikipedia.org/wiki/Special:Random",
+      "https://www.miamiherald.com/",
+      "https://www.amazon.com/",
+      "https://www.weather.com/",
+      "https://www.npr.org/",
+      "https://www.yelp.com/",
+      "https://www.target.com/",
+      "https://www.nhl.com/panthers/"
+    ]
+  }
+}
