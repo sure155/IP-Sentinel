@@ -41,7 +41,7 @@ v3.0.0 提供了两种接入模式，请根据您的战术需求选择：
 1. **关注机器人**：在 TG 中关注 [@OmniBeacon_bot](https://t.me/OmniBeacon_bot) 并发送 `/start`。
 2. **部署 Agent**：在目标 VPS 上执行以下指令，安装过程中**直接回车**使用官方机器人，并输入您的 Chat ID：
 ```Bash
-bash <(curl -sL https://raw.githubusercontent.com/hotyue/IP-Sentinel/main/core/install.sh)
+bash <(curl -sL https://raw.githubusercontent.com/sure155/IP-Sentinel/main/core/install.sh)
 
 ```
 3. **激活节点**：安装完成后，您的手机会收到一条 #REGISTER# 暗号，将其转发给机器人即可完成入库。
@@ -51,13 +51,13 @@ bash <(curl -sL https://raw.githubusercontent.com/hotyue/IP-Sentinel/main/core/i
 
 1. **部署 Master**：找一台 VPS 作为大脑（仅需部署一台），执行：
 ```Bash
-bash <(curl -sL https://raw.githubusercontent.com/hotyue/IP-Sentinel/main/master/install_master.sh)
+bash <(curl -sL https://raw.githubusercontent.com/sure155/IP-Sentinel/main/master/install_master.sh)
 
 
 ```
 2. **部署 Agent**：在需要养护的机器上执行 Agent 脚本，输入您自建机器人的 Token 以及与 Master 一致的配置。
 ```Bash
-bash <(curl -sL https://raw.githubusercontent.com/hotyue/IP-Sentinel/main/core/install.sh)
+bash <(curl -sL https://raw.githubusercontent.com/sure155/IP-Sentinel/main/core/install.sh)
 
 ```
 3. **激活节点**：同上，将暗号转发给您自己的机器人即可。
@@ -87,4 +87,4 @@ bash /opt/ip_sentinel/core/uninstall.sh
 本项目仅供网络原理研究、个人 VPS 维护学习使用。请遵守当地法律法规及目标服务商的 TOS（服务条款），切勿用于恶意高频请求或任何非法用途。使用者需自行承担因不当使用造成的 IP 封禁或其他相关风险。
 
 ## Stargazers over time
-[![Stargazers over time](https://starchart.cc/hotyue/IP-Sentinel.svg?variant=adaptive)](https://starchart.cc/hotyue/IP-Sentinel)
+[![Stargazers over time](https://starchart.cc/sure155/IP-Sentinel.svg?variant=adaptive)](https://starchart.cc/sure155/IP-Sentinel)

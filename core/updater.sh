@@ -15,7 +15,7 @@ fi
 source "$CONFIG_FILE"
 
 # [v3.1.0修复] REPO_RAW_URL 从 config.conf 读取，不再硬编码私库地址
-REPO_RAW_URL="${REPO_RAW_URL:-https://raw.githubusercontent.com/hotyue/IP-Sentinel/main}"
+REPO_RAW_URL="${REPO_RAW_URL:-https://raw.githubusercontent.com/sure155/IP-Sentinel/main}"
 
 # 2. 全局日志写入函数
 log() {

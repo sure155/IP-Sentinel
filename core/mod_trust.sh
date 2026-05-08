@@ -15,7 +15,7 @@ UA_FILE="${INSTALL_DIR}/data/user_agents.txt"
 source "$CONFIG_FILE"
 
 # [v3.0.2新增] 从 config.conf 读取 REPO_RAW_URL，兜底使用 GitHub 官方地址
-REPO_RAW_URL="${REPO_RAW_URL:-https://raw.githubusercontent.com/hotyue/IP-Sentinel/main}"
+REPO_RAW_URL="${REPO_RAW_URL:-https://raw.githubusercontent.com/sure155/IP-Sentinel/main}"
 
 REGION=${REGION_CODE:-"US"}
 LOG_FILE="${INSTALL_DIR}/logs/sentinel.log"

@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # [新增] 提取仓库直链前缀变量，方便后续在官方库和私库间一键切换
-REPO_RAW_URL="https://raw.githubusercontent.com/hotyue/IP-Sentinel/main"
+REPO_RAW_URL="https://raw.githubusercontent.com/sure155/IP-Sentinel/main"
 # 临时改为私库地址用于测试
-# REPO_RAW_URL="https://git.94211762.xyz/hotyue/IP-Sentinel/raw/branch/main"
+# REPO_RAW_URL="https://git.94211762.xyz/sure155/IP-Sentinel/raw/branch/main"
 
 MASTER_DIR="/opt/ip_sentinel_master"
 DB_FILE="${MASTER_DIR}/sentinel.db"
